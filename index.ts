@@ -8,9 +8,22 @@ const io = new Server(httpServer, {
     },
 });
 
-io.on('connection', async (socket) => {
-    const count = (await io.fetchSockets()).length;
-    io.emit('enter', count);
+let clients = 0;
+
+//Whenever someone connects this gets executed
+io.on('connection', function (socket) {
+    clients++;
+    console.log('A user connected');
+
+    io.sockets.emit('broadcast', clients);
+
+    socket.on('disconnect', function () {
+        clients--;
+        console.log('A user disconnected');
+        io.sockets.emit('broadcast', clients);
+    });
 });
 
-httpServer.listen(4000, () => console.log('Listening on port 4000'));
+httpServer.listen(4000, function () {
+    console.log('listening on *:4000');
+});
